@@ -1,0 +1,4 @@
+/target
+/Cargo.lock
+*.jpg
+!/examples/tinta_helada.jpg
