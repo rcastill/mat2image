@@ -2,3 +2,5 @@
 /Cargo.lock
 *.jpg
 !/examples/tinta_helada.jpg
+perf.data
+save_as.perf
