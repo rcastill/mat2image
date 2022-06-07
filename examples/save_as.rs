@@ -3,7 +3,7 @@
 
 use std::{borrow::Cow, env::args, time::Instant};
 
-use mat2image::ToImage;
+use mat2image::{ToImage, ToImageUnsafe};
 use opencv::imgcodecs::{imread, IMREAD_COLOR};
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
@@ -18,6 +18,11 @@ fn main() -> Result<()> {
     let start = Instant::now();
     let im = mat.to_image()?;
     let conv_elapsed = start.elapsed();
+
+    // Convert it to image::DynamicImage using unsafe (fast method)
+    let start = Instant::now();
+    let _im2 = unsafe { mat.to_image_unsafe()? };
+    let conv_unsafe_elapsed = start.elapsed();
 
     // Write file to output provided by user or default out.jpg using `image`
     // API
@@ -40,8 +45,9 @@ fn main() -> Result<()> {
     im.save(&*outfile)?;
     let save_elapsed = start.elapsed();
 
-    eprintln!("imread : {imread_elapsed:?}");
-    eprintln!("conv   : {conv_elapsed:?}");
-    eprintln!("save   : {save_elapsed:?}");
+    eprintln!("imread   : {imread_elapsed:?}");
+    eprintln!("conv     : {conv_elapsed:?}");
+    eprintln!("conv-uns : {conv_unsafe_elapsed:?}");
+    eprintln!("save     : {save_elapsed:?}");
     Ok(())
 }
