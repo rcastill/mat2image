@@ -1,12 +1,16 @@
 use image::{DynamicImage, RgbImage};
 use opencv::core::{Mat, MatTraitConst, CV_8UC3};
 
+/// Crate error
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
+    /// Input opencv::Mat has invalid dimensions
     #[error("invalid dimensions")]
     InvalidDimensions,
+    /// Opencv's crate error
     #[error("opencv error: {0}")]
     Cv(#[from] opencv::Error),
+    /// Unsupported underlying format for opencv::Mat
     #[error("unsupported format")]
     UnsupportedFormat,
 }
@@ -17,11 +21,18 @@ macro_rules! bail {
     };
 }
 
+/// Represents anything that can be converted into DynamicImage
 pub trait ToImage {
-    fn to_image(&self) -> Result<DynamicImage, Error>;
+    /// Error in conversion
+    type Err;
+
+    /// Converts T to DynamicImage
+    fn to_image(&self) -> Result<DynamicImage, Self::Err>;
 }
 
 impl ToImage for Mat {
+    type Err = Error;
+
     fn to_image(&self) -> Result<DynamicImage, Error> {
         if self.typ() != CV_8UC3 {
             bail!(Error::UnsupportedFormat)
