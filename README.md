@@ -5,6 +5,11 @@ Rust crate that exposes `ToImage` trait.
 It implements `ToImage` for `opencv::Mat` to convert it into
 `image::DynamicImage`.
 
+It also exposes `ToImageUnsafe`. The rationale behind this, comes after learning
+through [profiling](#profiling) that `Mat::iter()` is painfully slow. Then
+`Mat::to_image_unsafe` is implemented using `MatTraitConst::data` accessing
+the raw data.
+
 ## Running examples
 
 ### Save as
