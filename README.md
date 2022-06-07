@@ -1,3 +1,10 @@
+# mat2image
+
+Rust crate that exposes `ToImage` trait.
+
+It implements `ToImage` for `opencv::Mat` to convert it into
+`image::DynamicImage`.
+
 ## Running examples
 
 ### Save as
