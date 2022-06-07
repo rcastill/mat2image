@@ -1,3 +1,14 @@
+## Running examples
+
+### Save as
+
+This example reads an image (examples/tinta_helada.jpg) using `opencv` and 
+saves it using `image` API.
+
+```
+cargo run --release --example save_as [output_name[.jpg]=out.jpg]
+```
+
 ## Profiling
 
 When noticing that `to_image` takes too much time, I profiled using `perf` and
