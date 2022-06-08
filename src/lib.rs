@@ -1,10 +1,12 @@
 use core::slice;
 
-use image::{DynamicImage, RgbImage};
+use image::{DynamicImage, ImageBuffer, RgbImage};
 use opencv::{
     core::{Mat, MatTraitConst, CV_8UC3},
     prelude::MatTraitConstManual,
 };
+
+mod custom_pix;
 
 /// Crate error
 #[derive(thiserror::Error, Debug)]
@@ -18,6 +20,8 @@ pub enum Error {
     /// Unsupported underlying format for opencv::Mat
     #[error("unsupported format")]
     UnsupportedFormat,
+    #[error("container not big enough: https://docs.rs/image/latest/image/struct.ImageBuffer.html#method.from_raw")]
+    ContainerNotBigEnough,
 }
 
 macro_rules! bail {
@@ -26,10 +30,16 @@ macro_rules! bail {
     };
 }
 
-fn new_rgb_image(mat: &Mat) -> Result<RgbImage, Error> {
+#[inline]
+fn check_supported_format(mat: &Mat) -> Result<(), Error> {
     if mat.typ() != CV_8UC3 {
         bail!(Error::UnsupportedFormat)
     }
+    Ok(())
+}
+
+#[inline]
+fn check_and_get_dims(mat: &Mat) -> Result<(u32, u32), Error> {
     let w = mat.cols();
     if w <= 0 {
         bail!(Error::InvalidDimensions)
@@ -38,6 +48,17 @@ fn new_rgb_image(mat: &Mat) -> Result<RgbImage, Error> {
     if h <= 0 {
         bail!(Error::InvalidDimensions)
     }
+    Ok((w as u32, h as u32))
+}
+
+#[inline]
+fn full_check_and_get_dims(mat: &Mat) -> Result<(u32, u32), Error> {
+    check_supported_format(mat)?;
+    check_and_get_dims(mat)
+}
+
+fn new_rgb_image(mat: &Mat) -> Result<RgbImage, Error> {
+    let (w, h) = full_check_and_get_dims(mat)?;
     Ok(RgbImage::new(w as u32, h as u32))
 }
 
@@ -73,6 +94,11 @@ pub trait ToImageUnsafe {
 
     /// Converts to DynamicImage (unsafely)
     unsafe fn to_image_unsafe(&self) -> Result<DynamicImage, Self::Err>;
+
+    /// Reinterprets as ImageBuffer (no allocations)
+    unsafe fn as_image_buffer(
+        &self,
+    ) -> Result<ImageBuffer<custom_pix::Bgr, &[u8]>, Self::Err>;
 }
 
 impl ToImageUnsafe for Mat {
@@ -96,6 +122,20 @@ impl ToImageUnsafe for Mat {
         }
         let im = DynamicImage::ImageRgb8(rgbim);
         Ok(im)
+    }
+
+    /// This implementation returns ImageBuffer bound to reference of Mat,
+    /// then it is safe as long as checks are correct.
+    unsafe fn as_image_buffer(
+        &self,
+    ) -> Result<ImageBuffer<custom_pix::Bgr, &[u8]>, Self::Err> {
+        let (w, h) = full_check_and_get_dims(self)?;
+        // pixels * 3 channels
+        // let len = (w * h * 3) as usize;
+        // let buf = slice::from_raw_parts(self.data(), len);
+        // NO LONGER UNSAFE
+        ImageBuffer::from_raw(w, h, self.data_bytes()?)
+            .ok_or_else(|| Error::ContainerNotBigEnough)
     }
 }
 
