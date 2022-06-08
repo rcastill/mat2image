@@ -19,6 +19,8 @@ accessing the raw data.
 [data_bytes](https://docs.rs/opencv/latest/opencv/core/trait.MatTraitManual.html#method.data_bytes) and
 [data_bytes_mut](https://docs.rs/opencv/latest/opencv/core/trait.MatTraitManual.html#method.data_bytes_mut)
 - [ ] Can we convert BGR to RGB cheaply?
+- [ ] Do we collide with
+[cv-convert](https://docs.rs/cv-convert/latest/cv_convert/)
 
 ## Running examples
 
