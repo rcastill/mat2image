@@ -13,6 +13,13 @@ is painfully slow. Then `Mat::to_image_unsafe` is implemented using
 [Mat::data](https://docs.rs/opencv/latest/opencv/core/trait.MatTraitConstManual.html#method.data)
 accessing the raw data.
 
+## TODO
+
+- [ ] Refactor unsafe with
+[data_bytes](https://docs.rs/opencv/latest/opencv/core/trait.MatTraitManual.html#method.data_bytes) and
+[data_bytes_mut](https://docs.rs/opencv/latest/opencv/core/trait.MatTraitManual.html#method.data_bytes_mut)
+- [ ] Can we convert BGR to RGB cheaply?
+
 ## Running examples
 
 ### Save as
