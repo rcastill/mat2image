@@ -3,9 +3,8 @@
 
 use std::{borrow::Cow, env::args, time::Instant};
 
-use image::{RgbImage, buffer::ConvertBuffer, DynamicImage};
-use mat2image::{ToImage, ToImageUnsafe};
-use opencv::{imgcodecs::{imread, IMREAD_COLOR}, imgproc::{cvt_color, COLOR_BGR2RGB}, prelude::Mat};
+use mat2image::ToImage;
+use opencv::imgcodecs::{imread, IMREAD_COLOR};
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
@@ -26,15 +25,20 @@ fn main() -> Result<()> {
     let im = mat.to_image()?;
     let conv_elapsed = start.elapsed();
 
-    // Convert it to image::DynamicImage using unsafe (fast method)
-    let start = Instant::now();
-    let _im2 = unsafe { mat.to_image_unsafe() }?;
-    let conv_unsafe_elapsed = start.elapsed();
+    #[cfg(feature = "rayon")]
+    let conv_par_elapsed = {
+        let start = Instant::now();
+        let _im_par = mat.to_image_par()?;
+        start.elapsed()
+    };
 
     // Convert it to ImageBuffer using unsafe (fast + no allocations)
-    let start = Instant::now();
-    let im3 = unsafe { mat.as_image_buffer() }?;
-    let conv_noalloc_elapsed = start.elapsed();
+    #[cfg(feature = "experimental")]
+    let conv_noalloc_elapsed = {
+        let start = Instant::now();
+        let _im = mat.as_image_buffer()?;
+        start.elapsed()
+    };
 
     // Write file to output provided by user or default out.jpg using `image`
     // API
@@ -58,10 +62,11 @@ fn main() -> Result<()> {
     let save_elapsed = start.elapsed();
 
     // test
-
     eprintln!("imread   : {imread_elapsed:?}");
     eprintln!("conv     : {conv_elapsed:?}");
-    eprintln!("conv-uns : {conv_unsafe_elapsed:?}");
+    #[cfg(feature = "rayon")]
+    eprintln!("conv_par : {conv_par_elapsed:?}");
+    #[cfg(feature = "experimental")]
     eprintln!("conv-noa : {conv_noalloc_elapsed:?}");
     eprintln!("save     : {save_elapsed:?}");
     Ok(())

@@ -1,11 +1,10 @@
-use core::slice;
-
-use image::{DynamicImage, ImageBuffer, RgbImage};
+use image::{DynamicImage, RgbImage};
 use opencv::{
     core::{Mat, MatTraitConst, CV_8UC3},
     prelude::MatTraitConstManual,
 };
 
+#[cfg(feature = "experimental")]
 mod custom_pix;
 
 /// Crate error
@@ -69,6 +68,15 @@ pub trait ToImage {
 
     /// Converts T to DynamicImage
     fn to_image(&self) -> Result<DynamicImage, Self::Err>;
+
+    #[cfg(feature = "rayon")]
+    /// Converts T to DynamicImage using rayon parallel iterators
+    fn to_image_par(&self) -> Result<DynamicImage, Self::Err>;
+
+    #[cfg(feature = "experimental")]
+    fn as_image_buffer(
+        &self,
+    ) -> Result<ImageBuffer<custom_pix::Bgr, &[u8]>, Self::Err>;
 }
 
 impl ToImage for Mat {
@@ -76,41 +84,11 @@ impl ToImage for Mat {
 
     fn to_image(&self) -> Result<DynamicImage, Error> {
         let mut rgbim = new_rgb_image(self)?;
-        for (pos, pix) in self.iter::<rgb::alt::BGR8>()? {
-            let impix = image::Rgb([pix.r, pix.g, pix.b]);
-            rgbim.put_pixel(pos.x as u32, pos.y as u32, impix);
-        }
-        let im = DynamicImage::ImageRgb8(rgbim);
-        Ok(im)
-    }
-}
-
-/// Same as `ToImage` but exposing unsafe interface. This is in case source type
-/// has an interface to access underlying pointer type, as is the case with
-/// `opencv::Mat`
-pub trait ToImageUnsafe {
-    /// Error in conversion
-    type Err;
-
-    /// Converts to DynamicImage (unsafely)
-    unsafe fn to_image_unsafe(&self) -> Result<DynamicImage, Self::Err>;
-
-    /// Reinterprets as ImageBuffer (no allocations)
-    unsafe fn as_image_buffer(
-        &self,
-    ) -> Result<ImageBuffer<custom_pix::Bgr, &[u8]>, Self::Err>;
-}
-
-impl ToImageUnsafe for Mat {
-    type Err = Error;
-
-    unsafe fn to_image_unsafe(&self) -> Result<DynamicImage, Self::Err> {
-        let mut rgbim = new_rgb_image(self)?;
-        let w = rgbim.width();
         // pixels * 3 channels: already considered in rgbim.len() since it
         // derefs to [P::Subpixel], which is the primitive. See:
         // https://docs.rs/image/0.24.2/image/struct.ImageBuffer.html#deref-methods-%5BP%3A%3ASubpixel%5D
-        let data = slice::from_raw_parts(self.data(), rgbim.len());
+        let data = self.data_bytes()?;
+        let w = rgbim.width();
         for (pixi, i) in (0..data.len()).step_by(3).enumerate() {
             let b = data[i];
             let g = data[i + 1];
@@ -124,9 +102,34 @@ impl ToImageUnsafe for Mat {
         Ok(im)
     }
 
-    /// This implementation returns ImageBuffer bound to reference of Mat,
-    /// then it is safe as long as checks are correct.
-    unsafe fn as_image_buffer(
+    #[cfg(feature = "rayon")]
+    fn to_image_par(&self) -> Result<DynamicImage, Self::Err> {
+        let mut rgbim = new_rgb_image(self)?;
+        // pixels * 3 channels: already considered in rgbim.len() since it
+        // derefs to [P::Subpixel], which is the primitive. See:
+        // https://docs.rs/image/0.24.2/image/struct.ImageBuffer.html#deref-methods-%5BP%3A%3ASubpixel%5D
+        let data = self.data_bytes()?;
+
+        use rayon::prelude::*;
+        (&mut *rgbim)
+            // .par_iter_mut()
+            .par_chunks_mut(3)
+            .zip(data.par_chunks(3))
+            .for_each(|(rgbim_pix, mat_pix)| {
+                let b = mat_pix[0];
+                let g = mat_pix[1];
+                let r = mat_pix[2];
+                rgbim_pix[0] = r;
+                rgbim_pix[1] = g;
+                rgbim_pix[2] = b;
+            });
+
+        let im = DynamicImage::ImageRgb8(rgbim);
+        Ok(im)
+    }
+
+    #[cfg(feature = "experimental")]
+    fn as_image_buffer(
         &self,
     ) -> Result<ImageBuffer<custom_pix::Bgr, &[u8]>, Self::Err> {
         let (w, h) = full_check_and_get_dims(self)?;
@@ -145,14 +148,14 @@ mod test {
 
     use super::*;
 
+    #[cfg(feature = "rayon")]
     #[test]
-    fn safe_and_unsafe_eq() {
+    fn serial_eq_par() {
         let mat = imread("examples/tinta_helada.jpg", IMREAD_COLOR)
             .expect("Failed to imread");
-        let im1 = mat.to_image().expect("Failed to safely convert");
-        let im2 = unsafe {
-            mat.to_image_unsafe().expect("Failed to UN-safely convert")
-        };
+        let im1 = mat.to_image().expect("Failed to serially convert");
+        let im2 = mat.to_image_par().expect("Failed to parallelly convert");
+
         assert_eq!(im1, im2)
     }
 }
