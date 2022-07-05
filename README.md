@@ -19,7 +19,7 @@ accessing the raw data.
 [data_bytes](https://docs.rs/opencv/latest/opencv/core/trait.MatTraitManual.html#method.data_bytes) and
 [data_bytes_mut](https://docs.rs/opencv/latest/opencv/core/trait.MatTraitManual.html#method.data_bytes_mut)
 - [ ] Can we convert BGR to RGB cheaply?
-  -Seems like it can't be done: [image#1723](https://github.com/image-rs/image/issues/1723)
+  - Seems like it can't be done: [image#1723](https://github.com/image-rs/image/issues/1723)
 - [x] Do we collide with
 [cv-convert](https://docs.rs/cv-convert/latest/cv_convert/)
   - No implementation for Mat -> DynamicImage yet
