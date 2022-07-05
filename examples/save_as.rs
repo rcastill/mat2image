@@ -14,29 +14,26 @@ fn main() -> Result<()> {
     let mat = imread("examples/tinta_helada.jpg", IMREAD_COLOR)?;
     let imread_elapsed = start.elapsed();
 
-    // let start = Instant::now();
-    // let mut mat2 = mat;
-    // cvt_color(&mat, &mut mat2, COLOR_BGR2RGB, 0)?;
-    // let mat2_elapsed = start.elapsed();
-    // eprintln!("mat2 = {mat2_elapsed:?}");
-
     // Convert it to image::DynamicImage
     let start = Instant::now();
+    #[cfg(not(feature = "rayon"))]
     let im = mat.to_image()?;
+    #[cfg(feature = "rayon")]
+    let _im = mat.to_image()?;
     let conv_elapsed = start.elapsed();
 
     #[cfg(feature = "rayon")]
-    let conv_par_elapsed = {
+    let (conv_par_elapsed, im_par) = {
         let start = Instant::now();
-        let _im_par = mat.to_image_par()?;
-        start.elapsed()
+        let im = mat.to_image_par()?;
+        (start.elapsed(), im)
     };
 
     // Convert it to ImageBuffer using unsafe (fast + no allocations)
     #[cfg(feature = "experimental")]
     let conv_noalloc_elapsed = {
         let start = Instant::now();
-        let _im = mat.as_image_buffer()?;
+        let im = mat.as_image_buffer()?;
         start.elapsed()
     };
 
@@ -58,7 +55,10 @@ fn main() -> Result<()> {
         })
         .unwrap_or_else(|| Cow::Borrowed("out.jpg"));
     let start = Instant::now();
+    #[cfg(not(feature = "rayon"))]
     im.save(&*outfile)?;
+    #[cfg(feature = "rayon")]
+    im_par.save(&*outfile)?;
     let save_elapsed = start.elapsed();
 
     // test
