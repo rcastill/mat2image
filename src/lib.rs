@@ -1,3 +1,6 @@
+//! Utilities to convert [Mat](https://docs.rs/opencv/latest/opencv/core/struct.Mat.html) to
+//! [DynamicImage](https://docs.rs/image/latest/image/enum.DynamicImage.html)
+
 use image::{DynamicImage, RgbImage};
 use opencv::{
     core::{Mat, MatTraitConst, CV_8UC3},

@@ -13,17 +13,6 @@ is painfully slow. Then `Mat::to_image_unsafe` is implemented using
 [Mat::data](https://docs.rs/opencv/latest/opencv/core/trait.MatTraitConstManual.html#method.data)
 accessing the raw data.
 
-## TODO
-
-- [x] Refactor unsafe with
-[data_bytes](https://docs.rs/opencv/latest/opencv/core/trait.MatTraitManual.html#method.data_bytes) and
-[data_bytes_mut](https://docs.rs/opencv/latest/opencv/core/trait.MatTraitManual.html#method.data_bytes_mut)
-- [ ] Can we convert BGR to RGB cheaply?
-  - Seems like it can't be done: [image#1723](https://github.com/image-rs/image/issues/1723)
-- [x] Do we collide with
-[cv-convert](https://docs.rs/cv-convert/latest/cv_convert/)
-  - No implementation for Mat -> DynamicImage yet
-
 ## Running examples
 
 ### Save as
@@ -61,3 +50,9 @@ Then load it in [Firefox Profiler](https://profiler.firefox.com).
 
 - [Rust profiling](https://nnethercote.github.io/perf-book/profiling.html)
 - [Firefox Profiler Guide](https://github.com/firefox-devtools/profiler/blob/main/docs-user/guide-perf-profiling.md)
+
+## Notes
+
+- Can we convert BGR to RGB cheaply? - Seems like it can't be done: [image#1723](https://github.com/image-rs/image/issues/1723)
+- [cv-convert](https://docs.rs/cv-convert/latest/cv_convert/) does not have implementation for Mat -> DynamicImage
+  yet. There is an [issue](https://github.com/jerry73204/rust-cv-convert/issues/10) raised to merge this code into cv_convert.
