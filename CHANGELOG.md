@@ -1,0 +1,5 @@
+## 0.1.1 (August 13, 2022)
+  - Updated rgb + removed env PKG_CONFIG_PATH #2 #3
+
+## 0.1.0 (August 12, 2022)
+  - First version
