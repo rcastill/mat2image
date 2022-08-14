@@ -15,14 +15,10 @@ exclude = [
 [profile.release]
 debug = 1
 
-[env]
-# In case of custom installation
-PKG_CONFIG_PATH = "/usr/lib/pkgconfig:/usr/local/lib/pkgconfig:/opt/opencv4.6.0/lib64/pkgconfig"
-
 [dependencies]
-opencv    = { version = "0.64", default-features = false, features = ["rgb"] }
+opencv    = { version = "0.66", default-features = false, features = ["rgb"] }
 # Copy rgb dependency from
-# https://github.com/twistedfall/opencv-rust/blob/v0.64.1/Cargo.toml
+# https://github.com/twistedfall/opencv-rust/blob/v0.66.0/Cargo.toml
 # version 0.8.20 doesn't contain the deficiency mentioned in
 # https://deps.rs/crate/opencv/0.59.0#vulnerabilities
 rgb       = { version = "0.8.20", default-features = false }
@@ -37,5 +33,5 @@ optional = true
 default = ["rayon"]
 
 [dev-dependencies]
-opencv = "0.64"
+opencv = "0.66"
 image = "0.24"
