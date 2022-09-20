@@ -16,7 +16,7 @@ exclude = [
 debug = 1
 
 [dependencies]
-opencv    = { version = "0.66", default-features = false, features = ["rgb"] }
+opencv    = { version = "0.68", default-features = false, features = ["rgb"] }
 # Copy rgb dependency from
 # https://github.com/twistedfall/opencv-rust/blob/v0.66.0/Cargo.toml
 # version 0.8.20 doesn't contain the deficiency mentioned in
@@ -33,5 +33,9 @@ optional = true
 default = ["rayon"]
 
 [dev-dependencies]
-opencv = "0.66"
 image = "0.24"
+
+[dev-dependencies.opencv]
+version = "0.68"
+default-features = false
+features = ["imgcodecs"]
