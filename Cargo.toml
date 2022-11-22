@@ -1,6 +1,6 @@
 [package]
 name = "mat2image"
-version = "0.1.2"
+version = "0.2.0"
 edition = "2021"
 license = "MIT"
 description = "Utilities to convert opencv::Mat to image::DynamicImage"
@@ -16,7 +16,7 @@ exclude = [
 debug = 1
 
 [dependencies]
-opencv    = { version = "0.68", default-features = false, features = ["rgb"] }
+opencv    = { version = "0.74", default-features = false, features = ["rgb"] }
 # Copy rgb dependency from
 # https://github.com/twistedfall/opencv-rust/blob/v0.66.0/Cargo.toml
 # version 0.8.20 doesn't contain the deficiency mentioned in
@@ -36,6 +36,6 @@ default = ["rayon"]
 image = "0.24"
 
 [dev-dependencies.opencv]
-version = "0.68"
+version = "0.74"
 default-features = false
 features = ["imgcodecs"]
