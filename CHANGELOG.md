@@ -1,3 +1,6 @@
+## 0.2.0 (November 22, 2022)
+  - feat: updated opencv version -> 0.74
+
 ## 0.1.2 (September 20, 2022)
   - Updated opencv to 0.68 #5
 
