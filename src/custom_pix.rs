@@ -1,4 +1,4 @@
-use image::{Pixel, PixelWithColorType, DynamicImage};
+use image::{DynamicImage, Pixel, PixelWithColorType};
 
 #[derive(Clone, Copy)]
 pub struct Bgr(pub [u8; 3]);

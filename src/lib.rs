@@ -3,7 +3,7 @@
 
 use image::{DynamicImage, RgbImage};
 use opencv::{
-    core::{Mat, MatTraitConst, CV_8UC3},
+    core::{MatTraitConst, CV_8UC3},
     prelude::MatTraitConstManual,
 };
 
@@ -33,7 +33,7 @@ macro_rules! bail {
 }
 
 #[inline]
-fn check_supported_format(mat: &Mat) -> Result<(), Error> {
+fn check_supported_format(mat: &impl MatTraitConst) -> Result<(), Error> {
     if mat.typ() != CV_8UC3 {
         bail!(Error::UnsupportedFormat)
     }
@@ -41,7 +41,7 @@ fn check_supported_format(mat: &Mat) -> Result<(), Error> {
 }
 
 #[inline]
-fn check_and_get_dims(mat: &Mat) -> Result<(u32, u32), Error> {
+fn check_and_get_dims(mat: &impl MatTraitConst) -> Result<(u32, u32), Error> {
     let w = mat.cols();
     if w <= 0 {
         bail!(Error::InvalidDimensions)
@@ -54,12 +54,14 @@ fn check_and_get_dims(mat: &Mat) -> Result<(u32, u32), Error> {
 }
 
 #[inline]
-fn full_check_and_get_dims(mat: &Mat) -> Result<(u32, u32), Error> {
+fn full_check_and_get_dims(
+    mat: &impl MatTraitConst,
+) -> Result<(u32, u32), Error> {
     check_supported_format(mat)?;
     check_and_get_dims(mat)
 }
 
-fn new_rgb_image(mat: &Mat) -> Result<RgbImage, Error> {
+fn new_rgb_image(mat: &impl MatTraitConst) -> Result<RgbImage, Error> {
     let (w, h) = full_check_and_get_dims(mat)?;
     Ok(RgbImage::new(w as u32, h as u32))
 }
@@ -82,7 +84,10 @@ pub trait ToImage {
     ) -> Result<ImageBuffer<custom_pix::Bgr, &[u8]>, Self::Err>;
 }
 
-impl ToImage for Mat {
+impl<M> ToImage for M
+where
+    M: MatTraitConstManual,
+{
     type Err = Error;
 
     fn to_image(&self) -> Result<DynamicImage, Error> {
