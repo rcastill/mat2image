@@ -63,7 +63,7 @@ fn full_check_and_get_dims(
 
 fn new_rgb_image(mat: &impl MatTraitConst) -> Result<RgbImage, Error> {
     let (w, h) = full_check_and_get_dims(mat)?;
-    Ok(RgbImage::new(w as u32, h as u32))
+    Ok(RgbImage::new(w, h))
 }
 
 /// Represents anything that can be converted into DynamicImage
@@ -119,7 +119,7 @@ where
         let data = self.data_bytes()?;
 
         use rayon::prelude::*;
-        (&mut *rgbim)
+        (*rgbim)
             // .par_iter_mut()
             .par_chunks_mut(3)
             .zip(data.par_chunks(3))
