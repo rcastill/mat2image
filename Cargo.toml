@@ -22,7 +22,7 @@ opencv    = { version = "0.92.0", default-features = false, features = ["rgb"] }
 # version 0.8.20 doesn't contain the deficiency mentioned in
 # https://deps.rs/crate/opencv/0.59.0#vulnerabilities
 rgb       = { version = "0.8.20", default-features = false }
-image     = { version = "0.24", default-features = false }
+image     = { version = "0.25", default-features = false }
 thiserror = "1.0"
 
 [dependencies.rayon]
